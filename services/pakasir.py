@@ -1,11 +1,14 @@
 """
 Pakasir API Client for QRIS payment integration.
+Supports per-bot configuration for multi-bot platform.
 """
 
 import aiohttp
 from typing import Optional
 from dataclasses import dataclass
-from config import config
+
+
+PAKASIR_API_BASE_URL = "https://app.pakasir.com/api"
 
 
 @dataclass
@@ -34,10 +37,17 @@ class TransactionStatus:
 class PakasirClient:
     """Pakasir API client for payment operations."""
     
-    def __init__(self):
-        self.base_url = config.PAKASIR_API_BASE_URL
-        self.project = config.PAKASIR_PROJECT_SLUG
-        self.api_key = config.PAKASIR_API_KEY
+    def __init__(self, project_slug: str = None, api_key: str = None):
+        """
+        Initialize Pakasir client.
+        
+        Args:
+            project_slug: Pakasir project slug (per-bot)
+            api_key: Pakasir API key (per-bot)
+        """
+        self.base_url = PAKASIR_API_BASE_URL
+        self.project = project_slug or ""
+        self.api_key = api_key or ""
     
     async def create_transaction(
         self, 
@@ -56,6 +66,10 @@ class PakasirClient:
         Returns:
             PaymentResponse with QRIS string and payment details
         """
+        if not self.project or not self.api_key:
+            print("❌ Pakasir not configured for this bot")
+            return None
+        
         url = f"{self.base_url}/transactioncreate/{payment_method}"
         payload = {
             "project": self.project,
@@ -103,6 +117,9 @@ class PakasirClient:
         Returns:
             TransactionStatus with current status
         """
+        if not self.project or not self.api_key:
+            return None
+        
         url = f"{self.base_url}/transactiondetail"
         params = {
             "project": self.project,
@@ -141,6 +158,9 @@ class PakasirClient:
         Returns:
             True if cancelled successfully
         """
+        if not self.project or not self.api_key:
+            return False
+        
         url = f"{self.base_url}/transactioncancel"
         payload = {
             "project": self.project,
@@ -160,7 +180,6 @@ class PakasirClient:
     async def simulate_payment(self, order_id: str, amount: int) -> bool:
         """
         Simulate a payment (only works in sandbox mode).
-        Useful for testing webhook integration.
         
         Args:
             order_id: Order identifier
@@ -169,6 +188,9 @@ class PakasirClient:
         Returns:
             True if simulation successful
         """
+        if not self.project or not self.api_key:
+            return False
+        
         url = f"{self.base_url}/paymentsimulation"
         payload = {
             "project": self.project,
@@ -184,7 +206,3 @@ class PakasirClient:
             except Exception as e:
                 print(f"❌ Pakasir simulation error: {e}")
                 return False
-
-
-# Singleton instance
-pakasir_client = PakasirClient()

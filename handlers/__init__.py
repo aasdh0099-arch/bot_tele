@@ -1,12 +1,10 @@
-"""Handlers package."""
-from handlers.start import get_start_handlers
-from handlers.catalog import get_catalog_handlers
-from handlers.order import get_order_handlers
-from handlers.admin import get_admin_handlers
+"""
+Handlers Package
+All bot type handlers are organized in sub-packages.
+"""
 
-__all__ = [
-    "get_start_handlers",
-    "get_catalog_handlers",
-    "get_order_handlers",
-    "get_admin_handlers"
-]
+# Bot types available:
+# - store: Digital product store with QRIS payment
+# - verification: Simple student/member verification
+# - points_verify: Points-based verification with MySQL
+# - custom: Minimal template for custom bots
